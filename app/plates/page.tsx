@@ -7,7 +7,7 @@ import PlatesFilter from "@/components/plates-filter"
 import PlatesGrid from "@/components/plates-grid"
 
 export const metadata: Metadata = {
-  title: "جميع اللوحات | لوحات الإمارات VIP",
+  title: "اللوحات المتاحة | متجر اللوحات",
   description:
     "تصفح جميع لوحات السيارات الإماراتية المتاحة للبيع - لوحات VIP وأرقام مميزة من جميع الإمارات",
 }
@@ -19,11 +19,12 @@ export default function PlatesPage() {
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-black text-foreground md:text-4xl">
-            {"جميع اللوحات"}
+          <p className="mb-1 text-sm font-semibold text-primary">{"تصفح اللوحات"}</p>
+          <h1 className="mb-2 text-2xl font-black text-foreground md:text-3xl">
+            {"جميع اللوحات المتاحة"}
           </h1>
-          <p className="text-muted-foreground">
-            {"تصفح وابحث في أفخم أرقام لوحات السيارات الإماراتية"}
+          <p className="text-sm text-muted-foreground">
+            {"اختر رقمك المفضل من بين مجموعة حصرية من لوحات السيارات الإماراتية"}
           </p>
         </div>
 
