@@ -63,7 +63,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Tajawal', 'Arial', 'sans-serif'],
+        sans: ['var(--font-tajawal)', 'Arial', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',
