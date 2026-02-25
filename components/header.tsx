@@ -1,9 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, Crown, ChevronDown } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Menu, X, Crown, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/client"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 
 const navLinks = [
   { href: "/", label: "الرئيسية" },
@@ -14,6 +17,32 @@ const navLinks = [
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      setLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    setUser(null)
+    router.push("/")
+    router.refresh()
+  }
 
   return (
     <>
@@ -90,11 +119,44 @@ export default function Header() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <Link href="/plates" className="hidden sm:block">
-              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                {"تصفح اللوحات"}
-              </Button>
-            </Link>
+            {!loading && (
+              <>
+                {user ? (
+                  <div className="hidden items-center gap-2 sm:flex">
+                    <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-secondary/50 px-3 py-1.5">
+                      <User className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium text-foreground">
+                        {user.user_metadata?.full_name || user.email?.split("@")[0]}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleLogout}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span className="sr-only">{"تسجيل الخروج"}</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="hidden items-center gap-2 sm:flex">
+                    <Link href="/auth/login">
+                      <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground">
+                        <LogIn className="me-1.5 h-4 w-4" />
+                        {"تسجيل الدخول"}
+                      </Button>
+                    </Link>
+                    <Link href="/auth/sign-up">
+                      <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                        <UserPlus className="me-1.5 h-4 w-4" />
+                        {"إنشاء حساب"}
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -122,6 +184,51 @@ export default function Header() {
                   {link.label}
                 </Link>
               ))}
+              {/* Mobile Auth Links */}
+              {!loading && (
+                <div className="border-t border-border/30 pt-2">
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-2 px-4 py-3">
+                        <User className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">
+                          {user.user_metadata?.full_name || user.email?.split("@")[0]}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          handleLogout()
+                          setIsOpen(false)
+                        }}
+                        className="flex w-full items-center gap-2 rounded-lg px-4 py-3 text-base font-medium text-destructive transition-colors hover:bg-secondary"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        {"تسجيل الخروج"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/auth/login"
+                        className="flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <LogIn className="h-4 w-4" />
+                        {"تسجيل الدخول"}
+                      </Link>
+                      <Link
+                        href="/auth/sign-up"
+                        className="flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium text-primary transition-colors hover:bg-secondary"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        {"إنشاء حساب جديد"}
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
+
               <div className="border-t border-border/30 pt-2">
                 <p className="px-4 py-2 text-xs font-bold text-primary">{"الإمارات"}</p>
                 {[
