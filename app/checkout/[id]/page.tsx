@@ -34,7 +34,7 @@ export default async function CheckoutPage({ params, searchParams }: Props) {
   return (
     <main>
       <Header />
-      <CheckoutForm plate={plate} initialMethod={method || "crypto"} />
+      <CheckoutForm plate={plate} initialMethod={method || "card"} />
       <Footer />
       <FloatingContact />
     </main>

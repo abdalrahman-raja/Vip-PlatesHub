@@ -7,7 +7,6 @@ import {
   Crown,
   Shield,
   CreditCard,
-  Bitcoin,
   Phone,
   ArrowRight,
   Share2,
@@ -201,28 +200,19 @@ export default function PlateDetail({ plate }: PlateDetailProps) {
 
           {/* Payment Options */}
           <div className="rounded-xl border border-border/50 bg-card p-6">
-            <h2 className="mb-4 text-lg font-bold text-foreground">{"طرق الدفع"}</h2>
-            <div className="flex flex-col gap-3">
-              <Link href={`/checkout/${plate.id}?method=crypto`}>
-                <Button
-                  size="lg"
-                  className="w-full gap-3 bg-gradient-to-l from-orange-500 to-amber-500 text-base font-bold text-white hover:from-orange-600 hover:to-amber-600"
-                >
-                  <Bitcoin className="h-5 w-5" />
-                  {"الدفع بالعملات الرقمية (NOWPayments)"}
-                </Button>
-              </Link>
-              <Link href={`/checkout/${plate.id}?method=card`}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full gap-3 border-primary/30 text-base text-foreground hover:bg-primary/10"
-                >
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  {"الدفع بالبطاقة الائتمانية"}
-                </Button>
-              </Link>
-            </div>
+            <h2 className="mb-4 text-lg font-bold text-foreground">{"الدفع"}</h2>
+            <Link href={`/checkout/${plate.id}?method=card`}>
+              <Button
+                size="lg"
+                className="w-full gap-3 bg-primary text-base font-bold text-primary-foreground hover:bg-primary/90"
+              >
+                <CreditCard className="h-5 w-5" />
+                {"الدفع بالبطاقة الائتمانية"}
+              </Button>
+            </Link>
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              {"Visa, Mastercard - معاملات آمنة ومشفرة"}
+            </p>
           </div>
 
           {/* Contact Actions */}
