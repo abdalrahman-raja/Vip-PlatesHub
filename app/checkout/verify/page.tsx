@@ -101,10 +101,10 @@ function VerificationForm() {
           <Shield className="h-8 w-8 text-primary" />
         </div>
         <h1 className="mb-2 text-2xl font-black text-foreground">
-          {"التحقق من الدفع"}
+          {"تم إرسال رمز التحقق"}
         </h1>
         <p className="text-muted-foreground">
-          {"تم إرسال رمز التحقق إلى بريدك الإلكتروني"}
+          {"يرجى إدخال الرمز المرسل إلى بريدك الإلكتروني"}
         </p>
         {email && (
           <p className="mt-1 text-sm font-medium text-primary" dir="ltr">
