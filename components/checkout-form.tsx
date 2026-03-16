@@ -291,7 +291,8 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
             )}
 
             {/* Payment Buttons Container */}
-            <div className="rounded-xl border border-border/50 bg-card p-6">
+            {console.log("[v0] Rendering payment buttons container")}
+            <div className="rounded-xl border-2 border-primary bg-card p-6">
               <h2 className="mb-4 text-lg font-bold text-foreground">{"اختر طريقة الدفع"}</h2>
               
               <div className="flex flex-col gap-4">
