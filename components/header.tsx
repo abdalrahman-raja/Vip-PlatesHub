@@ -22,6 +22,16 @@ export default function Header() {
   const router = useRouter()
 
   useEffect(() => {
+    const supabaseConfigured =
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
+
+    if (!supabaseConfigured) {
+      setLoading(false)
+      return
+    }
+
     const supabase = createClient()
 
     supabase.auth.getUser().then(({ data: { user } }) => {
