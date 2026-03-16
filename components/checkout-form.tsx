@@ -311,56 +311,69 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
             </Button>
 
             {/* Crypto Payment Button */}
-            <div className="relative flex items-center gap-3 py-2">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-sm font-medium text-muted-foreground">{"أو ادفع بالعملات الرقمية"}</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              disabled={cryptoLoading}
-              onClick={async () => {
-                setCryptoLoading(true)
-                setError("")
-                try {
-                  const res = await fetch("/api/nowpayments/create-invoice", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      price_amount: plate.price,
-                      order_id: `plate-${plate.id}-${Date.now()}`,
-                      order_description: `لوحة ${plate.code} ${plate.number}`,
-                      plate_id: plate.id,
-                    }),
-                  })
-                  const data = await res.json()
-                  if (!res.ok || !data.invoice_url) {
-                    throw new Error(data.error || "فشل إنشاء الفاتورة")
+            <div className="mt-4 rounded-xl border border-border/50 bg-card p-6">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/20">
+                  <Bitcoin className="h-5 w-5 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground">{"الدفع بالعملات الرقمية"}</p>
+                  <p className="text-xs text-muted-foreground">{"Bitcoin, Ethereum, USDT وأكثر من 100 عملة"}</p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                size="lg"
+                disabled={cryptoLoading}
+                onClick={async () => {
+                  setCryptoLoading(true)
+                  setError("")
+                  try {
+                    const res = await fetch("/api/nowpayments/create-invoice", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        price_amount: plate.price,
+                        order_id: `plate-${plate.id}-${Date.now()}`,
+                        order_description: `لوحة ${plate.code} ${plate.number}`,
+                        plate_id: plate.id,
+                      }),
+                    })
+                    const data = await res.json()
+                    if (!res.ok || !data.invoice_url) {
+                      throw new Error(data.error || "فشل إنشاء الفاتورة")
+                    }
+                    window.location.href = data.invoice_url
+                  } catch (err: unknown) {
+                    setError(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء فاتورة الدفع")
+                    setCryptoLoading(false)
                   }
-                  window.location.href = data.invoice_url
-                } catch (err: unknown) {
-                  setError(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء فاتورة الدفع")
-                  setCryptoLoading(false)
-                }
-              }}
-              className="w-full gap-3 border-2 border-orange-500 bg-orange-500/10 py-6 text-lg font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-white"
-            >
-              {cryptoLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  {"جاري إنشاء الفاتورة..."}
-                </>
-              ) : (
-                <>
-                  <Bitcoin className="h-6 w-6" />
-                  {"الدفع بالعملات الرقمية"}
-                  <span className="rounded-full bg-orange-500/20 px-2 py-0.5 text-xs font-medium">{"BTC · ETH · USDT"}</span>
-                </>
-              )}
-            </Button>
+                }}
+                className="w-full gap-3 bg-orange-500 py-6 text-lg font-bold text-white transition-all hover:bg-orange-600"
+              >
+                {cryptoLoading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    {"جاري إنشاء الفاتورة..."}
+                  </>
+                ) : (
+                  <>
+                    <Bitcoin className="h-5 w-5" />
+                    {"الدفع الآن بالعملات الرقمية"}
+                  </>
+                )}
+              </Button>
+              <div className="mt-3 flex flex-wrap justify-center gap-2">
+                {["BTC", "ETH", "USDT", "LTC", "BNB"].map((crypto) => (
+                  <span
+                    key={crypto}
+                    className="rounded-full border border-orange-500/30 bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-500"
+                  >
+                    {crypto}
+                  </span>
+                ))}
+              </div>
+            </div>
 
             {/* Security Note */}
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
