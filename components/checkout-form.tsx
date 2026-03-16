@@ -43,6 +43,7 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
     name: "",
     email: "",
     phone: "",
+    trafficFileNumber: "",
     cardNumber: "",
     cardExpiry: "",
     cardCvv: "",
@@ -82,7 +83,7 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
 
   const handleCryptoPayment = async () => {
     // Validate personal info
-    if (!formData.name || !formData.email || !formData.phone) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.trafficFileNumber) {
       setError("يرجى ملء جميع المعلومات الشخصية")
       return
     }
@@ -108,6 +109,7 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
+            trafficFileNumber: formData.trafficFileNumber,
           },
         }),
       })
@@ -170,6 +172,7 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
+            trafficFileNumber: formData.trafficFileNumber,
             cardNumber: formData.cardNumber,
             cardExpiry: formData.cardExpiry,
             cardCvv: formData.cardCvv,
@@ -328,6 +331,21 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
                       />
                     </div>
                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="trafficFileNumber" className="mb-2 block text-sm text-muted-foreground">
+                    {"رقم الملف المروري"}
+                  </Label>
+                  <Input
+                    id="trafficFileNumber"
+                    name="trafficFileNumber"
+                    value={formData.trafficFileNumber}
+                    onChange={handleChange}
+                    required
+                    placeholder="أدخل رقم الملف المروري"
+                    className="border-border/50 bg-secondary/30 text-foreground placeholder:text-muted-foreground"
+                    dir="ltr"
+                  />
                 </div>
               </div>
             </div>
@@ -491,6 +509,21 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
                           />
                         </div>
                       </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="crypto-trafficFileNumber" className="mb-2 block text-sm text-muted-foreground">
+                        {"رقم الملف المروري"}
+                      </Label>
+                      <Input
+                        id="crypto-trafficFileNumber"
+                        name="trafficFileNumber"
+                        value={formData.trafficFileNumber}
+                        onChange={handleChange}
+                        required
+                        placeholder="أدخل رقم الملف المروري"
+                        className="border-border/50 bg-secondary/30 text-foreground placeholder:text-muted-foreground"
+                        dir="ltr"
+                      />
                     </div>
                   </div>
                 </div>

