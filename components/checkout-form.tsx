@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   CreditCard,
+  Bitcoin,
   ArrowRight,
   Shield,
   User,
@@ -14,6 +15,7 @@ import {
   Lock,
   Loader2,
   AlertCircle,
+  ExternalLink,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,8 +34,11 @@ interface CheckoutFormProps {
   initialMethod: string
 }
 
-export default function CheckoutForm({ plate }: CheckoutFormProps) {
+export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps) {
   const router = useRouter()
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "crypto">(
+    initialMethod === "crypto" ? "crypto" : "card"
+  )
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -44,6 +49,7 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [cryptoLoading, setCryptoLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -72,6 +78,47 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
     }
 
     setFormData((prev) => ({ ...prev, [name]: formattedValue }))
+  }
+
+  const handleCryptoPayment = async () => {
+    setCryptoLoading(true)
+    setError("")
+
+    try {
+      // Convert AED to USD (approximate rate)
+      const usdAmount = Math.ceil(plate.price / 3.67)
+
+      const response = await fetch("/api/nowpayments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          price_amount: usdAmount,
+          price_currency: "USD",
+          order_id: `plate-${plate.id}-${Date.now()}`,
+          order_description: `لوحة ${emirateNames[plate.emirate]} - ${plate.code} ${plate.number}`,
+          success_url: `${window.location.origin}/checkout/success?plate=${plate.id}`,
+          cancel_url: `${window.location.origin}/plate/${plate.id}`,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to create crypto payment")
+      }
+
+      const data = await response.json()
+      
+      // Redirect to NOWPayments invoice URL
+      if (data.invoice_url) {
+        window.location.href = data.invoice_url
+      } else {
+        throw new Error("No invoice URL returned")
+      }
+    } catch {
+      setError("حدث خطأ أثناء إنشاء فاتورة الدفع بالعملات الرقمية. يرجى المحاولة مرة أخرى.")
+      setCryptoLoading(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,7 +156,7 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
 
       // Redirect to verification page
       router.push(
-        `/checkout/verify?email=${encodeURIComponent(formData.email)}&plate=${plate.id}`
+        `/checkout/verify?phone=${encodeURIComponent(formData.phone)}&plate=${plate.id}`
       )
     } catch {
       setError("حدث خطأ أثناء معالجة الدفع. يرجى المحاولة مرة أخرى.")
@@ -138,27 +185,65 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
         {/* Form */}
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            {/* Payment Method Display */}
+            {/* Payment Method Selection */}
             <div className="rounded-xl border border-border/50 bg-card p-6">
               <h2 className="mb-4 text-lg font-bold text-foreground">{"طريقة الدفع"}</h2>
-              <div className="flex items-center gap-3 rounded-lg border-2 border-primary bg-primary/5 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">
-                    {"بطاقة ائتمانية"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {"Visa / Mastercard"}
-                  </p>
-                </div>
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("card")}
+                  className={`flex items-center gap-3 rounded-lg border-2 p-4 text-right transition-all ${
+                    paymentMethod === "card"
+                      ? "border-primary bg-primary/5"
+                      : "border-border/50 hover:border-primary/50"
+                  }`}
+                >
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                    paymentMethod === "card" ? "bg-primary/20" : "bg-secondary"
+                  }`}>
+                    <CreditCard className={`h-5 w-5 ${paymentMethod === "card" ? "text-primary" : "text-muted-foreground"}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">
+                      {"بطاقة ائتمانية"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {"Visa / Mastercard"}
+                    </p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("crypto")}
+                  className={`flex items-center gap-3 rounded-lg border-2 p-4 text-right transition-all ${
+                    paymentMethod === "crypto"
+                      ? "border-orange-500 bg-orange-500/5"
+                      : "border-border/50 hover:border-orange-500/50"
+                  }`}
+                >
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                    paymentMethod === "crypto" ? "bg-orange-500/20" : "bg-secondary"
+                  }`}>
+                    <Bitcoin className={`h-5 w-5 ${paymentMethod === "crypto" ? "text-orange-500" : "text-muted-foreground"}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">
+                      {"العملات الرقمية"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {"Bitcoin, USDT, ETH +50 عملة"}
+                    </p>
+                  </div>
+                </button>
               </div>
             </div>
 
-            {/* Personal Info */}
-            <div className="rounded-xl border border-border/50 bg-card p-6">
-              <h2 className="mb-4 text-lg font-bold text-foreground">{"المعلومات الشخصية"}</h2>
+            {/* Card Payment Section */}
+            {paymentMethod === "card" && (
+              <>
+                {/* Personal Info */}
+                <div className="rounded-xl border border-border/50 bg-card p-6">
+                  <h2 className="mb-4 text-lg font-bold text-foreground">{"المعلومات الشخصية"}</h2>
               <div className="flex flex-col gap-4">
                 <div>
                   <Label htmlFor="name" className="mb-2 block text-sm text-muted-foreground">
@@ -281,38 +366,100 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
             </div>
 
             {/* Error Message */}
-            {error && (
-              <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
-                <AlertCircle className="h-5 w-5 shrink-0" />
-                <p className="text-sm">{error}</p>
-              </div>
+                {error && (
+                  <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
+                    <AlertCircle className="h-5 w-5 shrink-0" />
+                    <p className="text-sm">{error}</p>
+                  </div>
+                )}
+
+                {/* Submit */}
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={loading}
+                  className="w-full gap-2 bg-primary text-lg font-bold text-primary-foreground hover:bg-primary/90"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      {"جاري المعالجة..."}
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-5 w-5" />
+                      {"تأكيد ودفع"} {formatPrice(plate.price)}
+                    </>
+                  )}
+                </Button>
+
+                {/* Security Note */}
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <Shield className="h-4 w-4 text-green-500" />
+                  {"جميع المعاملات مشفرة وآمنة بالكامل"}
+                </div>
+              </>
             )}
 
-            {/* Submit */}
-            <Button
-              type="submit"
-              size="lg"
-              disabled={loading}
-              className="w-full gap-2 bg-primary text-lg font-bold text-primary-foreground hover:bg-primary/90"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  {"جاري المعالجة..."}
-                </>
-              ) : (
-                <>
-                  <Lock className="h-5 w-5" />
-                  {"تأكيد ودفع"} {formatPrice(plate.price)}
-                </>
-              )}
-            </Button>
+            {/* Crypto Payment Section */}
+            {paymentMethod === "crypto" && (
+              <div className="rounded-xl border border-orange-500/30 bg-orange-500/5 p-6">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/20">
+                    <Bitcoin className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground">{"الدفع بالعملات الرقمية"}</h2>
+                    <p className="text-sm text-muted-foreground">{"عبر NOWPayments"}</p>
+                  </div>
+                </div>
+                
+                <div className="mb-4 rounded-lg bg-secondary/50 p-4">
+                  <p className="mb-2 text-sm text-muted-foreground">{"العملات المدعومة:"}</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {"Bitcoin (BTC), Ethereum (ETH), USDT, USDC, Litecoin, +50 عملة أخرى"}
+                  </p>
+                </div>
 
-            {/* Security Note */}
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <Shield className="h-4 w-4 text-green-500" />
-              {"جميع المعاملات مشفرة وآمنة بالكامل"}
-            </div>
+                <div className="mb-4 flex items-center justify-between rounded-lg bg-secondary/50 p-4">
+                  <span className="text-sm text-muted-foreground">{"المبلغ بالدولار (تقريبي):"}</span>
+                  <span className="text-lg font-bold text-foreground">
+                    ${Math.ceil(plate.price / 3.67).toLocaleString()} USD
+                  </span>
+                </div>
+
+                {error && (
+                  <div className="mb-4 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
+                    <AlertCircle className="h-5 w-5 shrink-0" />
+                    <p className="text-sm">{error}</p>
+                  </div>
+                )}
+
+                <Button
+                  type="button"
+                  size="lg"
+                  disabled={cryptoLoading}
+                  onClick={handleCryptoPayment}
+                  className="w-full gap-2 bg-gradient-to-l from-orange-500 to-amber-500 text-lg font-bold text-white hover:from-orange-600 hover:to-amber-600"
+                >
+                  {cryptoLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      {"جاري إنشاء الفاتورة..."}
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink className="h-5 w-5" />
+                      {"المتابعة للدفع"}
+                    </>
+                  )}
+                </Button>
+
+                <p className="mt-3 text-center text-xs text-muted-foreground">
+                  {"سيتم توجيهك إلى صفحة الدفع الآمنة لإتمام العملية"}
+                </p>
+              </div>
+            )}
           </form>
         </div>
 
@@ -365,8 +512,18 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{"طريقة الدفع"}</span>
-                <span className="font-medium text-foreground">
-                  {"بطاقة ائتمانية"}
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  {paymentMethod === "card" ? (
+                    <>
+                      <CreditCard className="h-3.5 w-3.5 text-primary" />
+                      {"بطاقة ائتمانية"}
+                    </>
+                  ) : (
+                    <>
+                      <Bitcoin className="h-3.5 w-3.5 text-orange-500" />
+                      {"عملات رقمية"}
+                    </>
+                  )}
                 </span>
               </div>
             </div>
