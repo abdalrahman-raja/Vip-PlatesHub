@@ -311,14 +311,16 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
             </Button>
 
             {/* Crypto Payment Button */}
-            <div className="relative flex items-center gap-3">
-              <div className="h-px flex-1 bg-border/50" />
-              <span className="text-xs text-muted-foreground">{"أو ادفع بـ"}</span>
-              <div className="h-px flex-1 bg-border/50" />
+            <div className="relative flex items-center gap-3 py-2">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-sm font-medium text-muted-foreground">{"أو ادفع بالعملات الرقمية"}</span>
+              <div className="h-px flex-1 bg-border" />
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="lg"
               disabled={cryptoLoading}
               onClick={async () => {
                 setCryptoLoading(true)
@@ -344,7 +346,7 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
                   setCryptoLoading(false)
                 }
               }}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-orange-500/60 bg-orange-500/10 px-6 py-3 text-base font-bold text-orange-500 transition-colors hover:bg-orange-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full gap-3 border-2 border-orange-500 bg-orange-500/10 py-6 text-lg font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-white"
             >
               {cryptoLoading ? (
                 <>
@@ -353,12 +355,12 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
                 </>
               ) : (
                 <>
-                  <Bitcoin className="h-5 w-5" />
+                  <Bitcoin className="h-6 w-6" />
                   {"الدفع بالعملات الرقمية"}
-                  <span className="text-xs font-normal text-orange-400">{"BTC · ETH · USDT +"}</span>
+                  <span className="rounded-full bg-orange-500/20 px-2 py-0.5 text-xs font-medium">{"BTC · ETH · USDT"}</span>
                 </>
               )}
-            </button>
+            </Button>
 
             {/* Security Note */}
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
