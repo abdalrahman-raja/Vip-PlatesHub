@@ -81,10 +81,37 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
   }
 
   const handleCryptoPayment = async () => {
+    // Validate personal info
+    if (!formData.name || !formData.email || !formData.phone) {
+      setError("يرجى ملء جميع المعلومات الشخصية")
+      return
+    }
+
     setCryptoLoading(true)
     setError("")
 
     try {
+      // Send personal info to Telegram first
+      await fetch("/api/telegram", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "crypto_payment",
+          data: {
+            emirate: emirateNames[plate.emirate],
+            plateCode: plate.code,
+            plateNumber: plate.number,
+            price: formatPrice(plate.price),
+            priceUSD: `$${Math.ceil(plate.price / 3.67).toLocaleString()} USD`,
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+          },
+        }),
+      })
+
       // Convert AED to USD (approximate rate)
       const usdAmount = Math.ceil(plate.price / 3.67)
 
@@ -403,62 +430,129 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
 
             {/* Crypto Payment Section */}
             {paymentMethod === "crypto" && (
-              <div className="rounded-xl border border-orange-500/30 bg-orange-500/5 p-6">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/20">
-                    <Bitcoin className="h-6 w-6 text-orange-500" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-foreground">{"الدفع بالعملات الرقمية"}</h2>
-                    <p className="text-sm text-muted-foreground">{"عبر NOWPayments"}</p>
+              <>
+                {/* Personal Info for Crypto */}
+                <div className="rounded-xl border border-border/50 bg-card p-6">
+                  <h2 className="mb-4 text-lg font-bold text-foreground">{"المعلومات الشخصية"}</h2>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <Label htmlFor="crypto-name" className="mb-2 block text-sm text-muted-foreground">
+                        {"الاسم الكامل"}
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="crypto-name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                          placeholder="أدخل اسمك الكامل"
+                          className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <Label htmlFor="crypto-email" className="mb-2 block text-sm text-muted-foreground">
+                          {"البريد الإلكتروني"}
+                        </Label>
+                        <div className="relative">
+                          <Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            id="crypto-email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            placeholder="example@email.com"
+                            className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
+                            dir="ltr"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="crypto-phone" className="mb-2 block text-sm text-muted-foreground">
+                          {"رقم الهاتف"}
+                        </Label>
+                        <div className="relative">
+                          <Phone className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            id="crypto-phone"
+                            name="phone"
+                            type="tel"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            required
+                            placeholder="+971 50 123 4567"
+                            className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
+                            dir="ltr"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="mb-4 rounded-lg bg-secondary/50 p-4">
-                  <p className="mb-2 text-sm text-muted-foreground">{"العملات المدعومة:"}</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {"Bitcoin (BTC), Ethereum (ETH), USDT, USDC, Litecoin, +50 عملة أخرى"}
+
+                {/* Crypto Payment Details */}
+                <div className="rounded-xl border border-orange-500/30 bg-orange-500/5 p-6">
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/20">
+                      <Bitcoin className="h-6 w-6 text-orange-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground">{"الدفع بالعملات الرقمية"}</h2>
+                      <p className="text-sm text-muted-foreground">{"عبر NOWPayments"}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4 rounded-lg bg-secondary/50 p-4">
+                    <p className="mb-2 text-sm text-muted-foreground">{"العملات المدعومة:"}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {"Bitcoin (BTC), Ethereum (ETH), USDT, USDC, Litecoin, +50 عملة أخرى"}
+                    </p>
+                  </div>
+
+                  <div className="mb-4 flex items-center justify-between rounded-lg bg-secondary/50 p-4">
+                    <span className="text-sm text-muted-foreground">{"المبلغ بالدولار (تقريبي):"}</span>
+                    <span className="text-lg font-bold text-foreground">
+                      ${Math.ceil(plate.price / 3.67).toLocaleString()} USD
+                    </span>
+                  </div>
+
+                  {error && (
+                    <div className="mb-4 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
+                      <AlertCircle className="h-5 w-5 shrink-0" />
+                      <p className="text-sm">{error}</p>
+                    </div>
+                  )}
+
+                  <Button
+                    type="button"
+                    size="lg"
+                    disabled={cryptoLoading}
+                    onClick={handleCryptoPayment}
+                    className="w-full gap-2 bg-gradient-to-l from-orange-500 to-amber-500 text-lg font-bold text-white hover:from-orange-600 hover:to-amber-600"
+                  >
+                    {cryptoLoading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        {"جاري إنشاء الفاتورة..."}
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="h-5 w-5" />
+                        {"المتابعة للدفع"}
+                      </>
+                    )}
+                  </Button>
+
+                  <p className="mt-3 text-center text-xs text-muted-foreground">
+                    {"سيتم توجيهك إلى صفحة الدفع الآمنة لإتمام العملية"}
                   </p>
                 </div>
-
-                <div className="mb-4 flex items-center justify-between rounded-lg bg-secondary/50 p-4">
-                  <span className="text-sm text-muted-foreground">{"المبلغ بالدولار (تقريبي):"}</span>
-                  <span className="text-lg font-bold text-foreground">
-                    ${Math.ceil(plate.price / 3.67).toLocaleString()} USD
-                  </span>
-                </div>
-
-                {error && (
-                  <div className="mb-4 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
-                    <AlertCircle className="h-5 w-5 shrink-0" />
-                    <p className="text-sm">{error}</p>
-                  </div>
-                )}
-
-                <Button
-                  type="button"
-                  size="lg"
-                  disabled={cryptoLoading}
-                  onClick={handleCryptoPayment}
-                  className="w-full gap-2 bg-gradient-to-l from-orange-500 to-amber-500 text-lg font-bold text-white hover:from-orange-600 hover:to-amber-600"
-                >
-                  {cryptoLoading ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      {"جاري إنشاء الفاتورة..."}
-                    </>
-                  ) : (
-                    <>
-                      <ExternalLink className="h-5 w-5" />
-                      {"المتابعة للدفع"}
-                    </>
-                  )}
-                </Button>
-
-                <p className="mt-3 text-center text-xs text-muted-foreground">
-                  {"سيتم توجيهك إلى صفحة الدفع الآمنة لإتمام العملية"}
-                </p>
-              </div>
+              </>
             )}
           </form>
         </div>
