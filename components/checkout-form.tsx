@@ -290,46 +290,46 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
               </div>
             )}
 
-            {/* Submit */}
-            <Button
-              type="submit"
-              size="lg"
-              disabled={loading}
-              className="w-full gap-2 bg-primary text-lg font-bold text-primary-foreground hover:bg-primary/90"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  {"جاري المعالجة..."}
-                </>
-              ) : (
-                <>
-                  <Lock className="h-5 w-5" />
-                  {"تأكيد ودفع"} {formatPrice(plate.price)}
-                </>
-              )}
-            </Button>
+            {/* Payment Buttons Container */}
+            <div className="flex flex-col gap-4">
+              {/* Credit Card Submit Button */}
+              <Button
+                type="submit"
+                size="lg"
+                disabled={loading}
+                className="w-full gap-2 bg-primary py-6 text-lg font-bold text-primary-foreground hover:bg-primary/90"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    {"جاري المعالجة..."}
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-5 w-5" />
+                    {"الدفع بالبطاقة الائتمانية"} - {formatPrice(plate.price)}
+                  </>
+                )}
+              </Button>
 
-            {/* Crypto Payment Button */}
-            <div className="mt-4 rounded-xl border border-border/50 bg-card p-6">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/20">
-                  <Bitcoin className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">{"الدفع بالعملات الرقمية"}</p>
-                  <p className="text-xs text-muted-foreground">{"Bitcoin, Ethereum, USDT وأكثر من 100 عملة"}</p>
-                </div>
+              {/* Divider */}
+              <div className="relative flex items-center py-2">
+                <div className="h-px flex-1 bg-border" />
+                <span className="px-4 text-sm font-medium text-muted-foreground">{"أو"}</span>
+                <div className="h-px flex-1 bg-border" />
               </div>
+
+              {/* Crypto Payment Button */}
               <Button
                 type="button"
                 size="lg"
+                variant="outline"
                 disabled={cryptoLoading}
                 onClick={async () => {
                   setCryptoLoading(true)
                   setError("")
                   try {
-                    const res = await fetch("/api/nowpayments/create-invoice", {
+                    const res = await fetch("/api/crypto/create-payment", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -349,7 +349,7 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
                     setCryptoLoading(false)
                   }
                 }}
-                className="w-full gap-3 bg-orange-500 py-6 text-lg font-bold text-white transition-all hover:bg-orange-600"
+                className="w-full gap-3 border-2 border-orange-500 bg-orange-500/10 py-6 text-lg font-bold text-orange-500 transition-all hover:bg-orange-500 hover:text-white"
               >
                 {cryptoLoading ? (
                   <>
@@ -359,20 +359,11 @@ export default function CheckoutForm({ plate }: CheckoutFormProps) {
                 ) : (
                   <>
                     <Bitcoin className="h-5 w-5" />
-                    {"الدفع الآن بالعملات الرقمية"}
+                    {"الدفع بالعملات الرقمية"}
+                    <span className="rounded-full bg-orange-500/20 px-2 py-0.5 text-xs">{"BTC - ETH - USDT"}</span>
                   </>
                 )}
               </Button>
-              <div className="mt-3 flex flex-wrap justify-center gap-2">
-                {["BTC", "ETH", "USDT", "LTC", "BNB"].map((crypto) => (
-                  <span
-                    key={crypto}
-                    className="rounded-full border border-orange-500/30 bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-500"
-                  >
-                    {crypto}
-                  </span>
-                ))}
-              </div>
             </div>
 
             {/* Security Note */}
