@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Menu, X, Crown, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { createClient } from "@/lib/supabase/client"
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 
 const navLinks = [
@@ -22,12 +22,7 @@ export default function Header() {
   const router = useRouter()
 
   useEffect(() => {
-    const supabaseConfigured =
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
-
-    if (!supabaseConfigured) {
+    if (!isSupabaseConfigured()) {
       setLoading(false)
       return
     }
@@ -47,6 +42,7 @@ export default function Header() {
   }, [])
 
   async function handleLogout() {
+    if (!isSupabaseConfigured()) return
     const supabase = createClient()
     await supabase.auth.signOut()
     setUser(null)
