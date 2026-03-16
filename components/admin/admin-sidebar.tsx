@@ -10,8 +10,8 @@ import {
   Settings,
   LogOut,
   Store,
-  Crown,
 } from "lucide-react"
+import Image from "next/image"
 import {
   Sidebar,
   SidebarContent,
@@ -50,9 +50,13 @@ export function AdminSidebar() {
     <Sidebar side="right" collapsible="icon" className="border-s border-border">
       <SidebarHeader className="border-b border-border p-4">
         <Link href="/admin" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Crown className="h-5 w-5" />
-          </div>
+          <Image
+            src="/logo.ico"
+            alt="VIP Plates Hub Logo"
+            width={36}
+            height={36}
+            className="h-9 w-9 shrink-0 rounded-lg object-contain"
+          />
           <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-bold text-foreground">لوحة التحكم</span>
             <span className="text-xs text-muted-foreground">لوحات الإمارات VIP</span>
