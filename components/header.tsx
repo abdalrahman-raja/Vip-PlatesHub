@@ -70,15 +70,21 @@ export default function Header() {
       <header className="sticky top-0 z-50 border-b border-border/30 bg-background/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/images/logo.png"
-              alt="VIP Plates Hub Logo"
-              width={120}
-              height={40}
-              className="h-10 w-auto object-contain"
-              priority
-            />
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex h-10 w-10 items-center justify-center">
+              <Image
+                src="/images/logo.png"
+                alt="VIP Plates Hub Logo"
+                width={40}
+                height={40}
+                className="h-8 w-auto object-contain"
+                priority
+              />
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-base font-extrabold text-foreground">{"متجر اللوحات"}</span>
+              <span className="mt-0.5 text-[10px] font-semibold tracking-widest text-primary">VIP PLATES</span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
