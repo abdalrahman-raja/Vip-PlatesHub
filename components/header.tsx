@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Menu, X, Crown, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-react"
+import Image from "next/image"
+import { Menu, X, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
@@ -69,14 +70,15 @@ export default function Header() {
       <header className="sticky top-0 z-50 border-b border-border/30 bg-background/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Crown className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-base font-extrabold text-foreground">{"متجر اللوحات"}</span>
-              <span className="mt-0.5 text-[10px] font-semibold tracking-widest text-primary">PLATES STORE</span>
-            </div>
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/images/logo.png"
+              alt="VIP Plates Hub Logo"
+              width={120}
+              height={40}
+              className="h-10 w-auto object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop Nav */}
