@@ -8,6 +8,7 @@ import {
   Shield,
   CreditCard,
   Bitcoin,
+  Landmark,
   Phone,
   ArrowRight,
   Share2,
@@ -222,9 +223,23 @@ export default function PlateDetail({ plate }: PlateDetailProps) {
                   {"الدفع بالعملات الرقمية"}
                 </Button>
               </Link>
+              <a
+                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`مرحباً، أريد الدفع عبر التحويل البنكي للوحة: ${emirateNames[plate.emirate]} ${plate.code} ${plate.number} - السعر: ${formatPrice(plate.price)}\n\nيرجى إرسال تفاصيل الحساب البنكي للتحويل.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full gap-3 border-blue-500/50 bg-gradient-to-l from-blue-500/10 to-cyan-500/10 text-base font-bold text-foreground hover:from-blue-500/20 hover:to-cyan-500/20"
+                >
+                  <Landmark className="h-5 w-5 text-blue-500" />
+                  {"الدفع عبر التحويل البنكي"}
+                </Button>
+              </a>
             </div>
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              {"Visa, Mastercard, Bitcoin, USDT - معاملات آمنة ومشفرة"}
+              {"Visa, Mastercard, Bitcoin, USDT, تحويل بنكي - معاملات آمنة ومشفرة"}
             </p>
           </div>
 
