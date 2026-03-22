@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8362720189:AAER2fKR2r9Xcxjw3p0jWjCSHOXDLaeKdyE"
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "-1003785586555"
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "-1003822530210"
 
 export async function POST(request: NextRequest) {
   try {
