@@ -8,6 +8,7 @@ import { Menu, X, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-reac
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { useAdmin } from "@/lib/admin-store"
 
 const navLinks = [
   { href: "/", label: "الرئيسية" },
@@ -21,6 +22,10 @@ export default function Header() {
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const { siteSettings } = useAdmin()
+
+  const logoSrc = siteSettings.logoUrl || "/images/logo.png"
+  const siteName = siteSettings.storeName || "متجر اللوحات"
 
   useEffect(() => {
     const supabase = createClient()
@@ -73,16 +78,17 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-2.5">
             <div className="flex h-10 w-10 items-center justify-center">
               <Image
-                src="/images/logo.png"
-                alt="VIP Plates Hub Logo"
+                src={logoSrc}
+                alt={`${siteName} Logo`}
                 width={40}
                 height={40}
                 className="h-8 w-auto object-contain"
                 priority
+                unoptimized={logoSrc.startsWith("data:")}
               />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-base font-extrabold text-foreground">{"متجر اللوحات"}</span>
+              <span className="text-base font-extrabold text-foreground">{siteName}</span>
               <span className="mt-0.5 text-[10px] font-semibold tracking-widest text-primary">VIP PLATES</span>
             </div>
           </Link>
