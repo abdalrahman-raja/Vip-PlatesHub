@@ -202,13 +202,13 @@ const defaultAdmins: AdminUser[] = [
   {
     id: "admin_1",
     username: "admin",
-    password: "admin123",
+    password: "Zoro232594!@#$",
     name: "المشرف الرئيسي",
     createdAt: new Date().toISOString(),
   },
 ]
 
-const ADMIN_PASSWORD = "admin123"
+const ADMIN_PASSWORD = "Zoro232594!@#$"
 const STORAGE_KEYS = {
   auth: "admin_auth",
   currentAdminId: "admin_current_id",
