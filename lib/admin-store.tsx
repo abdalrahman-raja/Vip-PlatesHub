@@ -41,6 +41,10 @@ export interface PaymentSettings {
     apiKey: string
     secretKey: string
   }
+  bankTransfer: {
+    enabled: boolean
+    whatsappNumber: string
+  }
   testMode: boolean
 }
 
@@ -96,16 +100,20 @@ interface AdminStore {
 
 const defaultPaymentSettings: PaymentSettings = {
   nowpayments: {
-    enabled: false,
+    enabled: true,
     apiKey: "",
     ipnSecret: "",
     currencies: ["BTC", "ETH", "USDT", "BNB", "USDC"],
   },
   creditCard: {
-    enabled: false,
+    enabled: true,
     provider: "stripe",
     apiKey: "",
     secretKey: "",
+  },
+  bankTransfer: {
+    enabled: true,
+    whatsappNumber: "+971501234567",
   },
   testMode: true,
 }

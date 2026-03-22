@@ -28,6 +28,7 @@ import {
   categoryNames,
   formatPrice,
 } from "@/lib/plates-data"
+import { useAdmin } from "@/lib/admin-store"
 
 interface CheckoutFormProps {
   plate: Plate
@@ -36,9 +37,18 @@ interface CheckoutFormProps {
 
 export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps) {
   const router = useRouter()
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "crypto">(
-    initialMethod === "crypto" ? "crypto" : "card"
-  )
+  const { paymentSettings } = useAdmin()
+  
+  // Determine initial payment method based on what's enabled
+  const getInitialMethod = (): "card" | "crypto" => {
+    if (initialMethod === "crypto" && paymentSettings.nowpayments.enabled) return "crypto"
+    if (initialMethod === "card" && paymentSettings.creditCard.enabled) return "card"
+    if (paymentSettings.creditCard.enabled) return "card"
+    if (paymentSettings.nowpayments.enabled) return "crypto"
+    return "card"
+  }
+  
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "crypto">(getInitialMethod())
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -219,52 +229,59 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
             <div className="rounded-xl border border-border/50 bg-card p-6">
               <h2 className="mb-4 text-lg font-bold text-foreground">{"طريقة الدفع"}</h2>
               <div className="flex flex-col gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("card")}
-                  className={`flex items-center gap-3 rounded-lg border-2 p-4 text-right transition-all ${
-                    paymentMethod === "card"
-                      ? "border-primary bg-primary/5"
-                      : "border-border/50 hover:border-primary/50"
-                  }`}
-                >
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                    paymentMethod === "card" ? "bg-primary/20" : "bg-secondary"
-                  }`}>
-                    <CreditCard className={`h-5 w-5 ${paymentMethod === "card" ? "text-primary" : "text-muted-foreground"}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">
-                      {"بطاقة ائتمانية"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {"Visa / Mastercard"}
-                    </p>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("crypto")}
-                  className={`flex items-center gap-3 rounded-lg border-2 p-4 text-right transition-all ${
-                    paymentMethod === "crypto"
-                      ? "border-orange-500 bg-orange-500/5"
-                      : "border-border/50 hover:border-orange-500/50"
-                  }`}
-                >
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                    paymentMethod === "crypto" ? "bg-orange-500/20" : "bg-secondary"
-                  }`}>
-                    <Bitcoin className={`h-5 w-5 ${paymentMethod === "crypto" ? "text-orange-500" : "text-muted-foreground"}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">
-                      {"العملات الرقمية"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {"Bitcoin, USDT, ETH +50 عملة"}
-                    </p>
-                  </div>
-                </button>
+                {paymentSettings.creditCard.enabled && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("card")}
+                    className={`flex items-center gap-3 rounded-lg border-2 p-4 text-right transition-all ${
+                      paymentMethod === "card"
+                        ? "border-primary bg-primary/5"
+                        : "border-border/50 hover:border-primary/50"
+                    }`}
+                  >
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                      paymentMethod === "card" ? "bg-primary/20" : "bg-secondary"
+                    }`}>
+                      <CreditCard className={`h-5 w-5 ${paymentMethod === "card" ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">
+                        {"بطاقة ائتمانية"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {"Visa / Mastercard"}
+                      </p>
+                    </div>
+                  </button>
+                )}
+                {paymentSettings.nowpayments.enabled && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("crypto")}
+                    className={`flex items-center gap-3 rounded-lg border-2 p-4 text-right transition-all ${
+                      paymentMethod === "crypto"
+                        ? "border-orange-500 bg-orange-500/5"
+                        : "border-border/50 hover:border-orange-500/50"
+                    }`}
+                  >
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                      paymentMethod === "crypto" ? "bg-orange-500/20" : "bg-secondary"
+                    }`}>
+                      <Bitcoin className={`h-5 w-5 ${paymentMethod === "crypto" ? "text-orange-500" : "text-muted-foreground"}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">
+                        {"العملات الرقمية"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {"Bitcoin, USDT, ETH +50 عملة"}
+                      </p>
+                    </div>
+                  </button>
+                )}
+                {!paymentSettings.creditCard.enabled && !paymentSettings.nowpayments.enabled && (
+                  <p className="text-center text-sm text-muted-foreground py-4">{"لا توجد طرق دفع متاحة حالياً"}</p>
+                )}
               </div>
             </div>
 

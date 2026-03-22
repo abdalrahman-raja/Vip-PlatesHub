@@ -28,6 +28,7 @@ import {
   plates,
 } from "@/lib/plates-data"
 import PlateCard from "@/components/plate-card"
+import { useAdmin } from "@/lib/admin-store"
 
 interface PlateDetailProps {
   plate: Plate
@@ -36,8 +37,9 @@ interface PlateDetailProps {
 export default function PlateDetail({ plate }: PlateDetailProps) {
   const [copied, setCopied] = useState(false)
   const [liked, setLiked] = useState(false)
+  const { paymentSettings, siteSettings } = useAdmin()
 
-  const whatsappNumber = "971501234567"
+  const whatsappNumber = paymentSettings.bankTransfer?.whatsappNumber?.replace(/\+/g, "") || siteSettings.whatsappNumber?.replace(/\+/g, "") || "971501234567"
   const whatsappMessage = encodeURIComponent(
     `مرحباً، أريد الاستفسار عن اللوحة: ${emirateNames[plate.emirate]} ${plate.code} ${plate.number} - السعر: ${formatPrice(plate.price)}`
   )
@@ -204,42 +206,51 @@ export default function PlateDetail({ plate }: PlateDetailProps) {
           <div className="rounded-xl border border-border/50 bg-card p-6">
             <h2 className="mb-4 text-lg font-bold text-foreground">{"طرق الدفع"}</h2>
             <div className="flex flex-col gap-3">
-              <Link href={`/checkout/${plate.id}?method=card`}>
-                <Button
-                  size="lg"
-                  className="w-full gap-3 bg-primary text-base font-bold text-primary-foreground hover:bg-primary/90"
+              {paymentSettings.creditCard.enabled && (
+                <Link href={`/checkout/${plate.id}?method=card`}>
+                  <Button
+                    size="lg"
+                    className="w-full gap-3 bg-primary text-base font-bold text-primary-foreground hover:bg-primary/90"
+                  >
+                    <CreditCard className="h-5 w-5" />
+                    {"الدفع بالبطاقة الائتمانية"}
+                  </Button>
+                </Link>
+              )}
+              {paymentSettings.nowpayments.enabled && (
+                <Link href={`/checkout/${plate.id}?method=crypto`}>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full gap-3 border-orange-500/50 bg-gradient-to-l from-orange-500/10 to-amber-500/10 text-base font-bold text-foreground hover:from-orange-500/20 hover:to-amber-500/20"
+                  >
+                    <Bitcoin className="h-5 w-5 text-orange-500" />
+                    {"الدفع بالعملات الرقمية"}
+                  </Button>
+                </Link>
+              )}
+              {paymentSettings.bankTransfer?.enabled && (
+                <a
+                  href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`مرحباً، أريد الدفع عبر التحويل البنكي للوحة: ${emirateNames[plate.emirate]} ${plate.code} ${plate.number} - السعر: ${formatPrice(plate.price)}\n\nيرجى إرسال تفاصيل الحساب البنكي للتحويل.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  <CreditCard className="h-5 w-5" />
-                  {"الدفع بالبطاقة الائتمانية"}
-                </Button>
-              </Link>
-              <Link href={`/checkout/${plate.id}?method=crypto`}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full gap-3 border-orange-500/50 bg-gradient-to-l from-orange-500/10 to-amber-500/10 text-base font-bold text-foreground hover:from-orange-500/20 hover:to-amber-500/20"
-                >
-                  <Bitcoin className="h-5 w-5 text-orange-500" />
-                  {"الدفع بالعملات الرقمية"}
-                </Button>
-              </Link>
-              <a
-                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`مرحباً، أريد الدفع عبر التحويل البنكي للوحة: ${emirateNames[plate.emirate]} ${plate.code} ${plate.number} - السعر: ${formatPrice(plate.price)}\n\nيرجى إرسال تفاصيل الحساب البنكي للتحويل.`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full gap-3 border-blue-500/50 bg-gradient-to-l from-blue-500/10 to-cyan-500/10 text-base font-bold text-foreground hover:from-blue-500/20 hover:to-cyan-500/20"
-                >
-                  <Landmark className="h-5 w-5 text-blue-500" />
-                  {"الدفع عبر التحويل البنكي"}
-                </Button>
-              </a>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full gap-3 border-blue-500/50 bg-gradient-to-l from-blue-500/10 to-cyan-500/10 text-base font-bold text-foreground hover:from-blue-500/20 hover:to-cyan-500/20"
+                  >
+                    <Landmark className="h-5 w-5 text-blue-500" />
+                    {"الدفع عبر التحويل البنكي"}
+                  </Button>
+                </a>
+              )}
+              {!paymentSettings.creditCard.enabled && !paymentSettings.nowpayments.enabled && !paymentSettings.bankTransfer?.enabled && (
+                <p className="text-center text-sm text-muted-foreground">{"لا توجد طرق دفع متاحة حالياً"}</p>
+              )}
             </div>
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              {"Visa, Mastercard, Bitcoin, USDT, تحويل بنكي - معاملات آمنة ومشفرة"}
+              {"معاملات آمنة ومشفرة"}
             </p>
           </div>
 
