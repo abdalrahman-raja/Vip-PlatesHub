@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Tajawal } from 'next/font/google'
+import { AdminStoreProvider } from '@/lib/admin-store'
 
 import './globals.css'
 
@@ -28,7 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <AdminStoreProvider>{children}</AdminStoreProvider>
+      </body>
     </html>
   )
 }
