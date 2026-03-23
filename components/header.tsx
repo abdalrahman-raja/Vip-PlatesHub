@@ -76,15 +76,13 @@ export default function Header() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg">
-              <Image
-                src="/logo.ico"
-                alt="شعار متجر اللوحات"
-                width={40}
-                height={40}
-                className="h-10 w-10 object-contain"
-              />
-            </div>
+            <Image
+              src="/logo.ico"
+              alt="VIP Plates Hub Logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-lg object-contain"
+            />
             <div className="flex flex-col leading-none">
               <span className="text-base font-extrabold text-foreground">{siteName}</span>
               <span className="mt-0.5 text-[10px] font-semibold tracking-widest text-primary">VIP PLATES</span>

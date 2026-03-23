@@ -51,15 +51,13 @@ export function AdminSidebar() {
     <Sidebar side="right" collapsible="icon" className="border-s border-border">
       <SidebarHeader className="border-b border-border p-4">
         <Link href="/admin" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-            <Image
-              src="/logo.ico"
-              alt="شعار لوحة التحكم"
-              width={36}
-              height={36}
-              className="h-9 w-9 object-contain"
-            />
-          </div>
+          <Image
+            src="/logo.ico"
+            alt="VIP Plates Hub Logo"
+            width={36}
+            height={36}
+            className="h-9 w-9 shrink-0 rounded-lg object-contain"
+          />
           <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-bold text-foreground">لوحة التحكم</span>
             <span className="text-xs text-muted-foreground">{currentAdmin?.name ?? "لوحات الإمارات VIP"}</span>

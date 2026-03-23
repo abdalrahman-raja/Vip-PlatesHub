@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Crown, Phone, Mail, MapPin } from "lucide-react"
+import Image from "next/image"
+import { Phone, Mail, MapPin } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -9,9 +10,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link href="/" className="mb-4 flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Crown className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <Image
+                src="/logo.ico"
+                alt="VIP Plates Hub Logo"
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-lg object-contain"
+              />
               <div className="flex flex-col leading-none">
                 <span className="text-base font-extrabold text-foreground">{"متجر اللوحات"}</span>
                 <span className="mt-0.5 text-[10px] font-semibold tracking-widest text-primary">PLATES STORE</span>

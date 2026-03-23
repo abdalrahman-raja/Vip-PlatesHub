@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Crown, Eye, EyeOff, LogIn, Mail, Lock } from "lucide-react"
+import { Eye, EyeOff, LogIn, Mail, Lock } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -54,9 +55,13 @@ export default function LoginPage() {
         <CardHeader className="items-center gap-4 pb-2">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-              <Crown className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <Image
+              src="/logo.ico"
+              alt="VIP Plates Hub Logo"
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-xl object-contain"
+            />
           </Link>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground">{"تسجيل الدخول"}</h1>
