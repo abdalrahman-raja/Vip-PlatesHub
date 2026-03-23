@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Save, Bitcoin, CreditCard, TestTube, CheckCircle2 } from "lucide-react"
+import { Save, Bitcoin, CreditCard, Landmark, TestTube, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -209,6 +209,45 @@ export default function PaymentsPage() {
               </div>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Bank Transfer */}
+      <Card className="border-border bg-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/10">
+                <Landmark className="h-5 w-5 text-cyan-400" />
+              </div>
+              <div>
+                <CardTitle className="text-base text-foreground">التحويل البنكي</CardTitle>
+                <CardDescription className="text-muted-foreground">قبول المدفوعات عبر التحويل البنكي</CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className={settings.bankTransfer?.enabled ? "border-green-500/20 bg-green-500/10 text-green-400" : "border-border text-muted-foreground"}>
+                {settings.bankTransfer?.enabled ? "مفعّل" : "معطّل"}
+              </Badge>
+              <Switch
+                checked={settings.bankTransfer?.enabled ?? false}
+                onCheckedChange={(v) => setSettings((p) => ({ ...p, bankTransfer: { ...p.bankTransfer, enabled: v, whatsappNumber: p.bankTransfer?.whatsappNumber || "" } }))}
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <Label className="text-foreground">رقم الواتساب للتواصل</Label>
+            <Input
+              value={settings.bankTransfer?.whatsappNumber || ""}
+              onChange={(e) => setSettings((p) => ({ ...p, bankTransfer: { ...p.bankTransfer, enabled: p.bankTransfer?.enabled ?? false, whatsappNumber: e.target.value } }))}
+              placeholder="+971501234567"
+              className="border-border bg-background font-mono text-sm text-foreground placeholder:text-muted-foreground"
+              dir="ltr"
+            />
+            <p className="text-xs text-muted-foreground">سيتم توجيه العملاء للتواصل عبر الواتساب لإتمام عملية التحويل البنكي</p>
+          </div>
         </CardContent>
       </Card>
     </div>

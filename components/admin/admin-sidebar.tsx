@@ -11,6 +11,7 @@ import {
   LogOut,
   Store,
   Crown,
+  Users,
 } from "lucide-react"
 import {
   Sidebar,
@@ -33,13 +34,14 @@ const navItems = [
   { title: "إدارة اللوحات", href: "/admin/plates", icon: Car },
   { title: "الطلبات", href: "/admin/orders", icon: ShoppingBag },
   { title: "إعدادات الدفع", href: "/admin/payments", icon: CreditCard },
+  { title: "المشرفون", href: "/admin/admins", icon: Users },
   { title: "إعدادات الموقع", href: "/admin/settings", icon: Settings },
 ]
 
 export function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { logout } = useAdmin()
+  const { logout, currentAdmin } = useAdmin()
 
   function handleLogout() {
     logout()
@@ -55,7 +57,7 @@ export function AdminSidebar() {
           </div>
           <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-bold text-foreground">لوحة التحكم</span>
-            <span className="text-xs text-muted-foreground">لوحات الإمارات VIP</span>
+            <span className="text-xs text-muted-foreground">{currentAdmin?.name ?? "لوحات الإمارات VIP"}</span>
           </div>
         </Link>
       </SidebarHeader>

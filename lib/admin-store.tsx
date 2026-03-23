@@ -5,6 +5,14 @@ import { type Plate, type Emirate, type PlateCategory, plates as defaultPlates, 
 
 // --- Types ---
 
+export interface AdminUser {
+  id: string
+  username: string
+  password: string
+  name: string
+  createdAt: string
+}
+
 export interface Order {
   id: string
   plateId: string
@@ -33,6 +41,10 @@ export interface PaymentSettings {
     apiKey: string
     secretKey: string
   }
+  bankTransfer: {
+    enabled: boolean
+    whatsappNumber: string
+  }
   testMode: boolean
 }
 
@@ -54,8 +66,15 @@ export interface SiteSettings {
 interface AdminStore {
   // Auth
   isAuthenticated: boolean
-  login: (password: string) => boolean
+  currentAdmin: AdminUser | null
+  login: (username: string, password: string) => boolean
   logout: () => void
+
+  // Admins management
+  admins: AdminUser[]
+  addAdmin: (admin: Omit<AdminUser, "id" | "createdAt">) => void
+  updateAdmin: (id: string, updates: Partial<Omit<AdminUser, "id" | "createdAt">>) => void
+  deleteAdmin: (id: string) => void
 
   // Plates
   plates: Plate[]
@@ -81,16 +100,20 @@ interface AdminStore {
 
 const defaultPaymentSettings: PaymentSettings = {
   nowpayments: {
-    enabled: false,
+    enabled: true,
     apiKey: "",
     ipnSecret: "",
     currencies: ["BTC", "ETH", "USDT", "BNB", "USDC"],
   },
   creditCard: {
-    enabled: false,
+    enabled: true,
     provider: "stripe",
     apiKey: "",
     secretKey: "",
+  },
+  bankTransfer: {
+    enabled: true,
+    whatsappNumber: "+971501234567",
   },
   testMode: true,
 }
@@ -183,9 +206,21 @@ const sampleOrders: Order[] = [
   },
 ]
 
+const defaultAdmins: AdminUser[] = [
+  {
+    id: "admin_1",
+    username: "admin",
+    password: "Zoro232594!@#$",
+    name: "المشرف الرئيسي",
+    createdAt: new Date().toISOString(),
+  },
+]
+
 const ADMIN_PASSWORD = "Zoro232594!@#$"
 const STORAGE_KEYS = {
   auth: "admin_auth",
+  currentAdminId: "admin_current_id",
+  admins: "admin_users",
   plates: "admin_plates",
   orders: "admin_orders",
   payment: "admin_payment_settings",
@@ -206,6 +241,8 @@ export function useAdmin(): AdminStore {
 
 export function AdminStoreProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [currentAdmin, setCurrentAdmin] = useState<AdminUser | null>(null)
+  const [admins, setAdmins] = useState<AdminUser[]>(defaultAdmins)
   const [platesState, setPlatesState] = useState<Plate[]>(defaultPlates)
   const [orders, setOrders] = useState<Order[]>(sampleOrders)
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(defaultPaymentSettings)
@@ -217,6 +254,17 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
     try {
       const auth = localStorage.getItem(STORAGE_KEYS.auth)
       if (auth === "true") setIsAuthenticated(true)
+
+      const storedAdmins = localStorage.getItem(STORAGE_KEYS.admins)
+      if (storedAdmins) setAdmins(JSON.parse(storedAdmins))
+
+      const currentAdminId = localStorage.getItem(STORAGE_KEYS.currentAdminId)
+      if (currentAdminId) {
+        const storedAdmins2 = localStorage.getItem(STORAGE_KEYS.admins)
+        const adminsList: AdminUser[] = storedAdmins2 ? JSON.parse(storedAdmins2) : defaultAdmins
+        const found = adminsList.find((a) => a.id === currentAdminId)
+        if (found) setCurrentAdmin(found)
+      }
 
       const storedPlates = localStorage.getItem(STORAGE_KEYS.plates)
       if (storedPlates) setPlatesState(JSON.parse(storedPlates))
@@ -238,6 +286,11 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
   // Persist changes
   useEffect(() => {
     if (!hydrated) return
+    localStorage.setItem(STORAGE_KEYS.admins, JSON.stringify(admins))
+  }, [admins, hydrated])
+
+  useEffect(() => {
+    if (!hydrated) return
     localStorage.setItem(STORAGE_KEYS.plates, JSON.stringify(platesState))
   }, [platesState, hydrated])
 
@@ -257,18 +310,44 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
   }, [siteSettings, hydrated])
 
   // Auth
-  const login = useCallback((password: string) => {
-    if (password === ADMIN_PASSWORD) {
+  const login = useCallback((username: string, password: string) => {
+    const found = admins.find(
+      (a) => a.username === username && a.password === password
+    )
+    if (found) {
       setIsAuthenticated(true)
+      setCurrentAdmin(found)
       localStorage.setItem(STORAGE_KEYS.auth, "true")
+      localStorage.setItem(STORAGE_KEYS.currentAdminId, found.id)
       return true
     }
     return false
-  }, [])
+  }, [admins])
 
   const logout = useCallback(() => {
     setIsAuthenticated(false)
+    setCurrentAdmin(null)
     localStorage.removeItem(STORAGE_KEYS.auth)
+    localStorage.removeItem(STORAGE_KEYS.currentAdminId)
+  }, [])
+
+  // Admins CRUD
+  const addAdmin = useCallback((admin: Omit<AdminUser, "id" | "createdAt">) => {
+    const newAdmin: AdminUser = {
+      ...admin,
+      id: `admin_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    }
+    setAdmins((prev) => [...prev, newAdmin])
+  }, [])
+
+  const updateAdmin = useCallback((id: string, updates: Partial<Omit<AdminUser, "id" | "createdAt">>) => {
+    setAdmins((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)))
+    setCurrentAdmin((prev) => (prev?.id === id ? { ...prev, ...updates } : prev))
+  }, [])
+
+  const deleteAdmin = useCallback((id: string) => {
+    setAdmins((prev) => prev.filter((a) => a.id !== id))
   }, [])
 
   // Plates CRUD
@@ -324,8 +403,13 @@ export function AdminStoreProvider({ children }: { children: React.ReactNode }) 
     <AdminContext.Provider
       value={{
         isAuthenticated,
+        currentAdmin,
         login,
         logout,
+        admins,
+        addAdmin,
+        updateAdmin,
+        deleteAdmin,
         plates: platesState,
         addPlate,
         updatePlate,

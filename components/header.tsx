@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Menu, X, Crown, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-react"
+import Image from "next/image"
+import { Menu, X, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { useAdmin } from "@/lib/admin-store"
 
 const navLinks = [
   { href: "/", label: "الرئيسية" },
@@ -20,13 +22,12 @@ export default function Header() {
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const { siteSettings } = useAdmin()
+
+  const logoSrc = siteSettings.logoUrl || "/images/logo.png"
+  const siteName = siteSettings.storeName || "متجر اللوحات"
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) {
-      setLoading(false)
-      return
-    }
-
     const supabase = createClient()
 
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -42,7 +43,6 @@ export default function Header() {
   }, [])
 
   async function handleLogout() {
-    if (!isSupabaseConfigured()) return
     const supabase = createClient()
     await supabase.auth.signOut()
     setUser(null)
@@ -76,12 +76,20 @@ export default function Header() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Crown className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-10 w-10 items-center justify-center">
+              <Image
+                src={logoSrc}
+                alt={`${siteName} Logo`}
+                width={40}
+                height={40}
+                className="h-8 w-auto object-contain"
+                priority
+                unoptimized={logoSrc.startsWith("data:")}
+              />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-base font-extrabold text-foreground">{"متجر اللوحات"}</span>
-              <span className="mt-0.5 text-[10px] font-semibold tracking-widest text-primary">PLATES STORE</span>
+              <span className="text-base font-extrabold text-foreground">{siteName}</span>
+              <span className="mt-0.5 text-[10px] font-semibold tracking-widest text-primary">VIP PLATES</span>
             </div>
           </Link>
 
