@@ -1,4 +1,4 @@
-import { CreditCard, ShieldCheck, Clock, Headphones, Lock } from "lucide-react"
+import { CreditCard, ShieldCheck, Clock, Headphones, Lock, Bitcoin } from "lucide-react"
 
 export default function PaymentMethods() {
   return (
@@ -6,33 +6,59 @@ export default function PaymentMethods() {
       <div className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-10 text-center">
           <h2 className="mb-3 text-3xl font-black text-foreground md:text-4xl">
-            {"طريقة الدفع"}
+            {"طرق الدفع"}
           </h2>
           <p className="text-muted-foreground">
-            {"ادفع بالبطاقة الائتمانية بأمان تام"}
+            {"ادفع بالبطاقة الائتمانية أو العملات الرقمية بأمان تام"}
           </p>
         </div>
 
-        {/* Card Payment */}
-        <div className="mx-auto max-w-2xl rounded-2xl border border-primary/20 bg-card p-6 md:p-8">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <CreditCard className="h-7 w-7 text-primary" />
+        {/* Payment Methods Grid */}
+        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
+          {/* Card Payment */}
+          <div className="rounded-2xl border border-primary/20 bg-card p-6 md:p-8">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+              <CreditCard className="h-7 w-7 text-primary" />
+            </div>
+            <h3 className="mb-2 text-xl font-bold text-foreground">
+              {"البطاقة الائتمانية"}
+            </h3>
+            <p className="mb-4 leading-relaxed text-muted-foreground">
+              {"ادفع باستخدام Visa, Mastercard أو أي بطاقة ائتمانية. معاملات مشفرة وآمنة 100%."}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {["Visa", "Mastercard", "Apple Pay", "Google Pay"].map((method) => (
+                <span
+                  key={method}
+                  className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary"
+                >
+                  {method}
+                </span>
+              ))}
+            </div>
           </div>
-          <h3 className="mb-2 text-xl font-bold text-foreground">
-            {"البطاقة الائتمانية"}
-          </h3>
-          <p className="mb-4 leading-relaxed text-muted-foreground">
-            {"ادفع باستخدام Visa, Mastercard أو أي بطاقة ائتمانية. معاملات مشفرة وآمنة 100%."}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {["Visa", "Mastercard", "Apple Pay", "Google Pay"].map((method) => (
-              <span
-                key={method}
-                className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary"
-              >
-                {method}
-              </span>
-            ))}
+
+          {/* Crypto Payment */}
+          <div className="rounded-2xl border border-orange-500/20 bg-card p-6 md:p-8">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-orange-500/10">
+              <Bitcoin className="h-7 w-7 text-orange-500" />
+            </div>
+            <h3 className="mb-2 text-xl font-bold text-foreground">
+              {"العملات الرقمية"}
+            </h3>
+            <p className="mb-4 leading-relaxed text-muted-foreground">
+              {"ادفع باستخدام Bitcoin, Ethereum, USDT وأكثر من 100 عملة رقمية أخرى عبر NOWPayments."}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {["BTC", "ETH", "USDT", "LTC", "BNB", "+100"].map((crypto) => (
+                <span
+                  key={crypto}
+                  className="rounded-full border border-orange-500/20 bg-orange-500/5 px-3 py-1 text-xs font-bold text-orange-500"
+                >
+                  {crypto}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 

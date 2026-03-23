@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { Menu, X, ChevronDown, LogIn, UserPlus, LogOut, User } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
@@ -76,15 +76,13 @@ export default function Header() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center">
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg">
               <Image
-                src={logoSrc}
-                alt={`${siteName} Logo`}
+                src="/logo.ico"
+                alt="شعار متجر اللوحات"
                 width={40}
                 height={40}
-                className="h-8 w-auto object-contain"
-                priority
-                unoptimized={logoSrc.startsWith("data:")}
+                className="h-10 w-10 object-contain"
               />
             </div>
             <div className="flex flex-col leading-none">

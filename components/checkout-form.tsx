@@ -463,113 +463,78 @@ export default function CheckoutForm({ plate, initialMethod }: CheckoutFormProps
               </>
             )}
 
+            {/* Credit Card Submit Button */}
+            <Button
+              type="submit"
+              size="lg"
+              disabled={loading}
+              className="w-full gap-3 bg-blue-600 py-6 text-lg font-bold text-white hover:bg-blue-700"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  {"جاري المعالجة..."}
+                </>
+              ) : (
+                <>
+                  <CreditCard className="h-5 w-5" />
+                  {"الدفع بالبطاقة الائتمانية"}
+                  <span className="mr-auto rounded-full bg-white/20 px-3 py-1 text-sm">{formatPrice(plate.price)}</span>
+                </>
+              )}
+            </Button>
+
             {/* Crypto Payment Section */}
-            {paymentMethod === "crypto" && (
-              <>
-                {/* Personal Info for Crypto */}
-                <div className="rounded-xl border border-border/50 bg-card p-6">
-                  <h2 className="mb-4 text-lg font-bold text-foreground">{"المعلومات الشخصية"}</h2>
-                  <div className="flex flex-col gap-4">
-                    <div>
-                      <Label htmlFor="crypto-name" className="mb-2 block text-sm text-muted-foreground">
-                        {"الاسم الكامل"}
-                      </Label>
-                      <div className="relative">
-                        <User className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id="crypto-name"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleChange}
-                          required
-                          placeholder="أدخل اسمك الكامل"
-                          className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label htmlFor="crypto-email" className="mb-2 block text-sm text-muted-foreground">
-                          {"البريد الإلكتروني"}
-                        </Label>
-                        <div className="relative">
-                          <Mail className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <Input
-                            id="crypto-email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            placeholder="example@email.com"
-                            className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="crypto-phone" className="mb-2 block text-sm text-muted-foreground">
-                          {"رقم الهاتف"}
-                        </Label>
-                        <div className="relative">
-                          <Phone className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <Input
-                            id="crypto-phone"
-                            name="phone"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            required
-                            placeholder="+971 50 123 4567"
-                            className="border-border/50 bg-secondary/30 pr-10 text-foreground placeholder:text-muted-foreground"
-                            dir="ltr"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="crypto-trafficFileNumber" className="mb-2 block text-sm text-muted-foreground">
-                        {"رقم الملف المروري"}
-                      </Label>
-                      <Input
-                        id="crypto-trafficFileNumber"
-                        name="trafficFileNumber"
-                        value={formData.trafficFileNumber}
-                        onChange={handleChange}
-                        required
-                        placeholder="أدخل رقم الملف المروري"
-                        className="border-border/50 bg-secondary/30 text-foreground placeholder:text-muted-foreground"
-                        dir="ltr"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Crypto Payment Details */}
-                <div className="rounded-xl border border-orange-500/30 bg-orange-500/5 p-6">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/20">
-                      <Bitcoin className="h-6 w-6 text-orange-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-foreground">{"الدفع بالعملات الرقمية"}</h2>
-                      <p className="text-sm text-muted-foreground">{"عبر NOWPayments"}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-4 rounded-lg bg-secondary/50 p-4">
-                    <p className="mb-2 text-sm text-muted-foreground">{"العملات المدعومة:"}</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {"Bitcoin (BTC), Ethereum (ETH), USDT, USDC, Litecoin, +50 عملة أخرى"}
-                    </p>
-                  </div>
-
-                  <div className="mb-4 flex items-center justify-between rounded-lg bg-secondary/50 p-4">
-                    <span className="text-sm text-muted-foreground">{"المبلغ بالدولار (تقريبي):"}</span>
-                    <span className="text-lg font-bold text-foreground">
-                      ${Math.ceil(plate.price / 3.67).toLocaleString()} USD
-                    </span>
-                  </div>
+            <div className="mt-2 rounded-xl border-2 border-orange-500/50 bg-orange-500/5 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Bitcoin className="h-5 w-5 text-orange-500" />
+                <span className="text-sm font-bold text-orange-500">{"أو ادفع بالعملات الرقمية"}</span>
+              </div>
+              <Button
+                type="button"
+                size="lg"
+                disabled={cryptoLoading}
+                onClick={async () => {
+                  setCryptoLoading(true)
+                  setError("")
+                  try {
+                    const res = await fetch("/api/crypto/create-payment", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        price_amount: plate.price,
+                        order_id: `plate-${plate.id}-${Date.now()}`,
+                        order_description: `لوحة ${plate.code} ${plate.number}`,
+                        plate_id: plate.id,
+                      }),
+                    })
+                    const data = await res.json()
+                    if (!res.ok || !data.invoice_url) {
+                      throw new Error(data.error || "فشل إنشاء الفاتورة")
+                    }
+                    window.location.href = data.invoice_url
+                  } catch (err: unknown) {
+                    setError(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء فاتورة الدفع")
+                    setCryptoLoading(false)
+                  }
+                }}
+                className="w-full gap-3 bg-orange-500 py-6 text-lg font-bold text-white hover:bg-orange-600"
+              >
+                {cryptoLoading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    {"جاري إنشاء الفاتورة..."}
+                  </>
+                ) : (
+                  <>
+                    <Bitcoin className="h-5 w-5" />
+                    {"الدفع بالعملات الرقمية"}
+                    <span className="mr-auto rounded-full bg-white/20 px-3 py-1 text-sm">{"BTC - ETH - USDT"}</span>
+                  </>
+                )}
+              </Button>
+              <p className="mt-2 text-center text-xs text-muted-foreground">{"Bitcoin, Ethereum, USDT وأكثر من 100 عملة رقمية"}</p>
+            </div>
 
                   {error && (
                     <div className="mb-4 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive">
